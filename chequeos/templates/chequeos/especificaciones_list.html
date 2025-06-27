@@ -1,0 +1,42 @@
+{% extends 'chequeos/base.html' %}
+
+{% block title %}Especificaciones de Equipos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Especificaciones Técnicas</h2>
+    <a href="{% url 'especificaciones_create' %}" class="btn btn-primary mb-3">Agregar Especificaciones</a>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Equipo</th>
+                <th>Procesador</th>
+                <th>RAM</th>
+                <th>Disco Duro</th>
+                <th>Sistema Operativo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for esp in especificaciones %}
+            <tr>
+                <td>{{ esp.Id_Equipo }}</td>
+                <td>{{ esp.Esp_Procesador }}</td>
+                <td>{{ esp.Esp_Memoria_RAM }}</td>
+                <td>{{ esp.Esp_Disco_Duro }}</td>
+                <td>{{ esp.Esp_Sistema_Operativo }}</td>
+                <td>
+                    <a href="{% url 'especificaciones_update' esp.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'especificaciones_delete' esp.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No hay especificaciones registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

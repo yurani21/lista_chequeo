@@ -1,0 +1,17 @@
+{% extends 'chequeos/base.html' %}
+
+{% block title %}Eliminar Usuario{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">¿Estás segura de que deseas eliminar este usuario?</h2>
+    <p><strong>{{ object }}</strong></p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        <a href="{% url 'usuario_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
+

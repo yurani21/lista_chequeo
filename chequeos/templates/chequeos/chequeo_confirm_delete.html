@@ -1,0 +1,22 @@
+{% extends 'chequeos/base.html' %}
+
+{% block title %}Eliminar Chequeo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">¿Estás segura de que deseas eliminar este chequeo?</h2>
+
+    <div class="alert alert-warning">
+        <p><strong>Usuario:</strong> {{ chequeo.Id_Usuario }}</p>
+        <p><strong>Equipo:</strong> {{ chequeo.Id_Equipo }}</p>
+        <p><strong>Fecha de Chequeo:</strong> {{ chequeo.Che_Fecha_Chequeo }}</p>
+        <p><strong>Observaciones:</strong> {{ chequeo.Che_Observaciones|default:"(Sin observaciones)" }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        <a href="{% url 'chequeo_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'chequeos/base.html' %}
+
+{% block title %}Lista de Equipos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Equipos Registrados</h2>
+
+    <a href="{% url 'equipo_create' %}" class="btn btn-primary mb-3">Registrar Equipo</a>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Placa o Serie</th>
+                <th>Área</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipo in equipos %}
+            <tr>
+                <td>{{ equipo.Id_Equipo }}</td>
+                <td>{{ equipo.Equ_Placa_Serie }}</td>
+                <td>{{ equipo.Area.NombreArea }}</td>
+                <td>
+                    <a href="{% url 'equipo_update' equipo.Id_Equipo %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'equipo_delete' equipo.Id_Equipo %}" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No hay equipos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

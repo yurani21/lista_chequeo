@@ -1,0 +1,14 @@
+{% extends 'chequeos/base.html' %}
+
+{% block title %}Eliminar Especificaciones{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">¿Estás segura de que deseas eliminar esta especificación?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'especificaciones_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

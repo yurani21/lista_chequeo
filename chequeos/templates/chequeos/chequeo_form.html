@@ -1,0 +1,44 @@
+{% extends 'chequeos/base.html' %}
+
+{% block title %}Lista de Chequeos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Chequeos Realizados</h2>
+    <a href="{% url 'chequeo_create' %}" class="btn btn-primary mb-3">Registrar Chequeo</a>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Equipo (Serial)</th>
+                <th>Área</th>
+                <th>Fecha</th>
+                <th>Observaciones</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for chequeo in chequeos %}
+            <tr>
+                <td>{{ chequeo.Id_Chequeo }}</td>
+                <td>{{ chequeo.Id_Usuario.Usu_Nombre }}</td>
+                <td>{{ chequeo.Id_Equipo.Equ_Placa_Serie }}</td>
+                <td>{{ chequeo.Id_Equipo.Area.NombreArea }}</td>
+                <td>{{ chequeo.Che_Fecha_Chequeo }}</td>
+                <td>{{ chequeo.Che_Observaciones }}</td>
+                <td>
+                    <a href="{% url 'chequeo_update' chequeo.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'chequeo_delete' chequeo.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">No hay chequeos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

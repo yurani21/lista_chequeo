@@ -1,0 +1,36 @@
+{% extends 'chequeos/base.html' %}
+
+{% block title %}Lista de Software{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Software</h2>
+    <a href="{% url 'software_create' %}" class="btn btn-primary mb-3">Agregar Software</a>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Versión</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for software in softwares %}
+            <tr>
+                <td>{{ software.id }}</td>
+                <td>{{ software.Nombre }}</td>
+                <td>{{ software.Version }}</td>
+                <td>
+                    <a href="{% url 'software_update' software.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'software_delete' software.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">No hay software registrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
