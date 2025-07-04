@@ -8,7 +8,23 @@
 
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <!-- Placa o Serie del equipo -->
+        <div class="mb-3">
+            {{ form.Equ_Placa_Serie.label_tag }}
+            {{ form.Equ_Placa_Serie }}
+        </div>
+
+        <!-- Campo oculto real (ID del área) -->
+        <div class="mb-3 d-none">
+            {{ form.Area }}
+        </div>
+
+        <!-- Campo visible solo lectura para mostrar nombre del área -->
+        <div class="mb-3">
+            <label for="id_area_visible" class="form-label">Área o Servicio</label>
+            <input type="text" id="id_area_visible" class="form-control" readonly>
+        </div>
 
         <button type="submit" class="btn btn-success">Guardar</button>
         <a href="{% url 'equipo_list' %}" class="btn btn-secondary">Cancelar</a>

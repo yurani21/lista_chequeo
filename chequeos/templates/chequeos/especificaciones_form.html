@@ -1,15 +1,106 @@
 {% extends 'chequeos/base.html' %}
 
-{% block title %}Formulario Especificaciones{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Especificaciones del Equipo</h2>
+    <h2 class="mb-4">{{ title }}</h2>
+
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'especificaciones_list' %}" class="btn btn-secondary">Cancelar</a>
+
+        <!-- EQUIPO -->
+        <div class="mb-3">
+            {{ form.Id_Equipo.label_tag }}
+            {{ form.Id_Equipo }}
+        </div>
+
+        <!-- INFO AUTOMÁTICA DEL EQUIPO SELECCIONADO -->
+        <div id="info-equipo" class="alert alert-info d-none">
+            <strong>Placa:</strong> <span id="info-placa"></span><br>
+            <strong>Área o Servicio:</strong> <span id="info-area"></span>
+        </div>
+
+        <hr>
+        <h4 class="mt-4">🔧 Hardware</h4>
+        <div class="row">
+            <div class="col-md-6 mb-3">{{ form.Esp_Procesador.label_tag }}{{ form.Esp_Procesador }}</div>
+            <div class="col-md-6 mb-3">{{ form.Esp_Memoria_RAM.label_tag }}{{ form.Esp_Memoria_RAM }}</div>
+            <div class="col-md-6 mb-3">{{ form.Esp_Disco_Duro.label_tag }}{{ form.Esp_Disco_Duro }}</div>
+            <div class="col-md-6 mb-3">{{ form.Esp_Tipo_Disco.label_tag }}{{ form.Esp_Tipo_Disco }}</div>
+            <div class="col-md-6 mb-3">{{ form.Esp_Tarjeta_Video.label_tag }}{{ form.Esp_Tarjeta_Video }}</div>
+        </div>
+
+        <hr>
+        <h4 class="mt-4">💻 Software</h4>
+        <div class="col-md-12 mb-3">
+    <label><strong>Software Instalado</strong></label>
+    <div class="row">
+        {% for checkbox in form.software_instalado %}
+            <div class="col-md-4 mb-2">
+                <div class="form-check">
+                    {{ checkbox.tag }} {{ checkbox.choice_label }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+        <hr>
+        <h4 class="mt-4">🔒 Seguridad</h4>
+        <div class="row">
+            <div class="col-md-6 mb-3">{{ form.Esp_SO_Actualizado.label_tag }}{{ form.Esp_SO_Actualizado }}</div>
+            <div class="col-md-6 mb-3">{{ form.Esp_Antivirus.label_tag }}{{ form.Esp_Antivirus }}</div>
+            <div class="col-md-6 mb-3">{{ form.Esp_Antivirus_Actualizado.label_tag }}{{ form.Esp_Antivirus_Actualizado }}</div>
+        </div>
+
+        <hr>
+        <h4 class="mt-4">📊 Estado General</h4>
+        <div class="row">
+            <div class="col-md-6 mb-3">{{ form.Esp_Estado_Equipo.label_tag }}{{ form.Esp_Estado_Equipo }}</div>
+            <div class="col-md-6 mb-3">{{ form.Esp_Estado_Bateria.label_tag }}{{ form.Esp_Estado_Bateria }}</div>
+            <div class="col-md-12 mb-3">{{ form.Esp_Observaciones.label_tag }}{{ form.Esp_Observaciones }}</div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2 flex-wrap">
+    <button type="submit" name="_save" class="btn btn-success">💾 Guardar</button>
+<button type="submit" name="_addanother" class="btn btn-primary">➕ Guardar y agregar otro</button>
+<button type="submit" name="_continue" class="btn btn-warning">✏️ Guardar y continuar editando</button>
+    <a href="{{ cancel_url }}" class="btn btn-secondary">Cancelar</a>
+</div>
+
     </form>
 </div>
+
+<!-- Script para mostrar información del equipo -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectEquipo = document.getElementById('id_Id_Equipo');
+    const infoDiv = document.getElementById('info-equipo');
+    const infoPlaca = document.getElementById('info-placa');
+    const infoArea = document.getElementById('info-area');
+
+    function obtenerInfo() {
+        const nombre = selectEquipo.options[selectEquipo.selectedIndex].text;
+        if (nombre) {
+            fetch(`/ajax/obtener-info-equipo/?equipo=${encodeURIComponent(nombre)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.placa && data.area) {
+                        infoPlaca.textContent = data.placa;
+                        infoArea.textContent = data.area;
+                        infoDiv.classList.remove('d-none');
+                    } else {
+                        infoDiv.classList.add('d-none');
+                    }
+                });
+        }
+    }
+
+    selectEquipo.addEventListener('change', obtenerInfo);
+    if (selectEquipo.value) {
+        obtenerInfo();
+    }
+});
+</script>
 {% endblock %}

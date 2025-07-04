@@ -1,42 +1,96 @@
 {% extends 'chequeos/base.html' %}
 
-{% block title %}Especificaciones de Equipos{% endblock %}
+{% block title %}Lista de Especificaciones de Equipos{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Especificaciones Técnicas</h2>
-    <a href="{% url 'especificaciones_create' %}" class="btn btn-primary mb-3">Agregar Especificaciones</a>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Equipo</th>
-                <th>Procesador</th>
-                <th>RAM</th>
-                <th>Disco Duro</th>
-                <th>Sistema Operativo</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for esp in especificaciones %}
-            <tr>
-                <td>{{ esp.Id_Equipo }}</td>
-                <td>{{ esp.Esp_Procesador }}</td>
-                <td>{{ esp.Esp_Memoria_RAM }}</td>
-                <td>{{ esp.Esp_Disco_Duro }}</td>
-                <td>{{ esp.Esp_Sistema_Operativo }}</td>
-                <td>
-                    <a href="{% url 'especificaciones_update' esp.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'especificaciones_delete' esp.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Lista de Especificaciones de Equipos</h2>
+        <a href="{% url 'especificaciones_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nueva especificación
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+           <thead class="table-dark text-center">
+    <tr>
+        <th>ID</th>
+        <th>Equipo</th>
+        <th>Procesador</th>
+        <th>Disco</th>
+        <th>RAM</th>
+        <th>S.O.</th>
+        <th>Software</th> 
+        <th>Antivirus</th>
+        <th>Estado</th>
+        <th>Observaciones</th>
+        <th>Acciones</th>
+    </tr>
+</thead>
+            <tbody>
+  {% for esp in especificaciones %}
+  <tr>
+      <td class="text-center">{{ esp.Id_Especificacion }}</td>
+      <td>{{ esp.Id_Equipo }}</td>
+      <td>{{ esp.Esp_Procesador|default:"—" }}</td>
+      <td>{{ esp.Esp_Disco_Duro|default:"—" }}</td>
+      <td class="text-center">{{ esp.Esp_Memoria_RAM|default:"—" }}</td>
+      <td>{{ esp.Esp_Sistema_Operativo|default:"—" }}</td>
+
+      <!-- SOFTWARE -->
+      <td>
+    {% with esp.Id_Equipo.equiposoftware_set.all as software %}
+    {% if software %}
+        <ul>
+            {% for sw in software %}
+                <li>{{ sw.Id_Software }}</li>
             {% empty %}
-            <tr>
-                <td colspan="6" class="text-center">No hay especificaciones registradas.</td>
-            </tr>
+                <li>—</li>
             {% endfor %}
-        </tbody>
-    </table>
+        </ul>
+    {% else %}
+        —
+    {% endif %}
+{% endwith %}
+      </td>
+
+      <td>{{ esp.Esp_Antivirus|default:"—" }}</td>
+      <td class="text-center">{{ esp.Esp_Estado_Equipo|default:"—" }}</td>
+      <td>{{ esp.Esp_Observaciones|default:"—"|truncatechars:40 }}</td>
+      <td class="text-center">
+          <div class="btn-group" role="group">
+              <a href="{% url 'especificaciones_update' esp.pk %}"
+                 class="btn btn-sm btn-outline-warning"
+                 title="Editar" data-bs-toggle="tooltip">
+                  <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'especificaciones_delete' esp.pk %}"
+                 class="btn btn-sm btn-outline-danger"
+                 title="Eliminar" data-bs-toggle="tooltip">
+                  <i class="bi bi-trash"></i>
+              </a>
+          </div>
+      </td>
+  </tr>
+  {% empty %}
+  <tr>
+      <td colspan="11" class="text-center py-3 text-muted">
+          No hay registros de especificaciones aún.
+      </td>
+  </tr>
+  {% endfor %}
+</tbody>
+
+        </table>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+});
+</script>
 {% endblock %}

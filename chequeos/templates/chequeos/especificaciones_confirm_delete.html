@@ -1,14 +1,28 @@
 {% extends 'chequeos/base.html' %}
 
-{% block title %}Eliminar Especificaciones{% endblock %}
+{% block title %}Eliminar Asignación de Software{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">¿Estás segura de que deseas eliminar esta especificación?</h2>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Eliminar</button>
-        <a href="{% url 'especificaciones_list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<div class="container mt-5">
+  <h2 class="mb-4">Confirmar Eliminación</h2>
+
+  <div class="alert alert-warning" role="alert">
+    ¿Estás segura(o) de que deseas eliminar esta asignación de software?
+  </div>
+
+  <ul class="list-group mb-3">
+    <li class="list-group-item">
+      <strong>Equipo:</strong> {{ equiposoftware.equipo }}
+    </li>
+    <li class="list-group-item">
+      <strong>Software:</strong> {{ equiposoftware.software }}
+    </li>
+  </ul>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a href="{% url 'equiposoftware_list' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
 </div>
 {% endblock %}

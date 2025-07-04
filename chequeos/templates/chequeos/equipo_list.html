@@ -24,9 +24,11 @@
                 <td>{{ equipo.Equ_Placa_Serie }}</td>
                 <td>{{ equipo.Area.NombreArea }}</td>
                 <td>
-                    <a href="{% url 'equipo_update' equipo.Id_Equipo %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'especificaciones_update' equipo.Id_Equipo %}" class="btn btn-sm btn-info">Ficha Técnica</a>
                     <a href="{% url 'equipo_delete' equipo.Id_Equipo %}" class="btn btn-sm btn-danger">Eliminar</a>
+                    
                 </td>
+
             </tr>
             {% empty %}
             <tr>
