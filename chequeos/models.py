@@ -1,4 +1,8 @@
 from django.db import models
+# from .especificaciones import EspecificacionesEquipo
+
+# from chequeos.models import Equipo
+
 
 class Usuario(models.Model):
     Id_Usuario = models.AutoField(primary_key=True)
@@ -7,6 +11,7 @@ class Usuario(models.Model):
 
     def __str__(self):
         return self.Usu_Nombre
+
 
 class AreaServicio(models.Model):
     Id_Area = models.AutoField(primary_key=True)
@@ -17,22 +22,11 @@ class AreaServicio(models.Model):
 
 class Equipo(models.Model):
     Id_Equipo = models.AutoField(primary_key=True)
-    Equ_Placa_Serie = models.CharField(max_length=100, unique=True)
+    Equ_Placa_Serie = models.CharField(max_length=100)
     Area = models.ForeignKey('AreaServicio', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.Equ_Placa_Serie
-
-
-class Chequeo(models.Model):
-    Id_Chequeo = models.AutoField(primary_key=True)
-    Id_Usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='Id_Usuario')
-    Id_Equipo = models.ForeignKey(Equipo, on_delete=models.CASCADE, db_column='Id_Equipo')
-    Che_Fecha_Chequeo = models.DateField()
-    Che_Observaciones = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return f'{self.Id_Usuario} - {self.Che_Fecha_Chequeo}'
 
 class Software(models.Model):
     Sof_Nombre = models.CharField(max_length=100)
@@ -41,34 +35,39 @@ class Software(models.Model):
     def __str__(self):
         return self.Sof_Nombre
 
-class EspecificacionesEquipo(models.Model):
-    # Django generará automáticamente el campo 'id' como clave primaria
-    Equipo = models.OneToOneField(
-        'Equipo',
-        on_delete=models.CASCADE,
-        db_column='Id_Equipo',
-        primary_key=True
-    )
-
-    Esp_Procesador = models.CharField("Procesador", max_length=100, null=True, blank=True)
-    Esp_Disco_Duro = models.CharField("Disco Duro", max_length=100, null=True, blank=True)
-    Esp_Tipo_Disco = models.CharField("Tipo de Disco", max_length=50, null=True, blank=True)
-    Esp_Sistema_Operativo = models.CharField("Sistema Operativo", max_length=100, null=True, blank=True)
-    Esp_Version_SO = models.CharField("Versión del SO", max_length=50, null=True, blank=True)
-    Esp_Licencia_SO = models.CharField("Licencia del SO", max_length=100, null=True, blank=True)
-    Esp_Memoria_RAM = models.CharField("Memoria RAM", max_length=100, null=True, blank=True)
-    Esp_Tarjeta_Video = models.CharField("Tarjeta de Video", max_length=100, null=True, blank=True)
-    Esp_Puertos_Disponibles = models.TextField("Puertos Disponibles", null=True, blank=True)
-    Esp_SO_Actualizado = models.CharField("¿Tiene actualizaciones del SO?", max_length=100, null=True, blank=True)
-    Esp_Antivirus = models.CharField("Antivirus Instalado", max_length=100, null=True, blank=True)
-    Esp_Antivirus_Actualizado = models.CharField("¿Antivirus actualizado?", max_length=100, null=True, blank=True)
-    Esp_Software_Instalado = models.TextField("Software Instalado", null=True, blank=True)
-    Esp_Estado_Equipo = models.CharField("Estado del Equipo", max_length=100, null=True, blank=True)
-    Esp_Estado_Bateria = models.CharField("Estado de la Batería", max_length=100, null=True, blank=True)
-    Esp_Observaciones = models.TextField("Observaciones generales", null=True, blank=True)
+class Chequeo(models.Model):
+    Id_Chequeo = models.AutoField(primary_key=True)
+    Id_Usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='Id_Usuario', related_name='chequeos')
+    Id_Equipo = models.ForeignKey(Equipo, on_delete=models.CASCADE, db_column='Id_Equipo', related_name='chequeos')
+    Che_Fecha_Chequeo = models.DateField()
+    Che_Observaciones = models.TextField(null=True, blank=True)
+    software_instalado = models.ManyToManyField('Software', blank=True)
 
     def __str__(self):
-        return f"Especificaciones del equipo {self.Equipo_id}"
+        return f'{self.Id_Equipo.Equ_Placa_Serie} - {self.Che_Fecha_Chequeo.strftime("%d/%m/%Y")}'
 
-    class Meta:
-        db_table = 'chequeos_especificacionesequipo'
+class EspecificacionesEquipo(models.Model):
+    equipo = models.OneToOneField('Equipo', on_delete=models.CASCADE, unique=True, related_name='especificacionesequipo')
+
+    Esp_Procesador = models.CharField(max_length=100)
+    Esp_Disco_Duro = models.CharField(max_length=100)
+    Esp_Tipo_Disco = models.CharField(max_length=50)
+    Esp_Sistema_Operativo = models.CharField(max_length=100)
+    Esp_Version_SO = models.CharField(max_length=50)
+    Esp_Licencia_SO = models.CharField(max_length=100)
+    Esp_Memoria_RAM = models.CharField(max_length=50)
+    Esp_Tarjeta_Video = models.CharField(max_length=100)
+    Esp_Conectividad_Red = models.CharField(max_length=100, default="Ninguna")
+    Esp_Estado_Bateria = models.CharField(max_length=50)
+    Esp_SO_Actualizado = models.BooleanField(default=False)
+    Esp_Antivirus = models.CharField(max_length=100, blank=True)
+    Esp_Antivirus_Actualizado = models.BooleanField(default=False)
+    Esp_Estado_Equipo = models.CharField(max_length=100)
+    Esp_Observaciones = models.TextField(blank=True)
+    Esp_Software_Instalado = models.TextField(blank=True, verbose_name="Software Instalado")
+
+    def __str__(self):
+        return f"Especificaciones - {self.equipo}"
+
+
+

@@ -1,33 +1,51 @@
 {% extends 'chequeos/base.html' %}
+{% load form_filters %}
 
-{% block title %}{{ accion }} Equipo{% endblock %}
+{% block title %}{{ form.instance.pk|yesno:"Editar Chequeo,Nuevo Chequeo" }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">{{ accion }} Equipo</h2>
+    <h2 class="mb-4">{{ form.instance.pk|yesno:"Editar Chequeo,Nuevo Chequeo" }}</h2>
 
-    <form method="post">
+    <form method="post" novalidate>
         {% csrf_token %}
+        {{ form.non_field_errors }}
 
-        <!-- Placa o Serie del equipo -->
+        <div class="row">
+            <div class="mb-3 col-md-6">
+                {{ form.Id_Usuario.label_tag }}
+                {{ form.Id_Usuario|add_class:"form-select" }}
+            </div>
+            <div class="mb-3 col-md-6">
+                {{ form.Id_Equipo.label_tag }}
+                {{ form.Id_Equipo|add_class:"form-select" }}
+            </div>
+        </div>
+
         <div class="mb-3">
-            {{ form.Equ_Placa_Serie.label_tag }}
-            {{ form.Equ_Placa_Serie }}
+            {{ form.Che_Fecha_Chequeo.label_tag }}
+            {{ form.Che_Fecha_Chequeo|add_class:"form-control" }}
         </div>
 
-        <!-- Campo oculto real (ID del área) -->
-        <div class="mb-3 d-none">
-            {{ form.Area }}
-        </div>
-
-        <!-- Campo visible solo lectura para mostrar nombre del área -->
         <div class="mb-3">
-            <label for="id_area_visible" class="form-label">Área o Servicio</label>
-            <input type="text" id="id_area_visible" class="form-control" readonly>
+            {{ form.Che_Observaciones.label_tag }}
+            {{ form.Che_Observaciones|add_class:"form-control" }}
         </div>
 
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'equipo_list' %}" class="btn btn-secondary">Cancelar</a>
+        <div class="mb-3">
+            <label class="form-label">{{ form.software_instalado.label }}</label><br>
+                {% for checkbox in form.software_instalado %}
+        <div class="form-check form-check-inline">
+            {{ checkbox }} {{ checkbox.choice_label }}
+        </div>
+            {% empty %}
+        <p class="text-muted">No hay software registrado.</p>
+            {% endfor %}
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'chequeo_list' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

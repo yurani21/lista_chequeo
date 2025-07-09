@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'chequeos',
+    'admin_interface',
+    'colorfield', 
+    'jazzmin',
+   
     
 ]
 
@@ -137,5 +141,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Redirección después del login y logout
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/admin/login/'
+
+
 
 

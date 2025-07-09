@@ -1,44 +1,53 @@
 {% extends 'chequeos/base.html' %}
+{% load form_filters %}
 
-{% block title %}Lista de Chequeos{% endblock %}
+{% block title %}{{ form.instance.pk|yesno:"Editar Chequeo,Nuevo Chequeo" }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Chequeos Realizados</h2>
-    <a href="{% url 'chequeo_create' %}" class="btn btn-primary mb-3">Registrar Chequeo</a>
+    <h2 class="mb-4">{{ form.instance.pk|yesno:"Editar Chequeo,Nuevo Chequeo" }}</h2>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Usuario</th>
-                <th>Equipo (Serial)</th>
-                <th>Área</th>
-                <th>Fecha</th>
-                <th>Observaciones</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for chequeo in chequeos %}
-            <tr>
-                <td>{{ chequeo.Id_Chequeo }}</td>
-                <td>{{ chequeo.Id_Usuario.Usu_Nombre }}</td>
-                <td>{{ chequeo.Id_Equipo.Equ_Placa_Serie }}</td>
-                <td>{{ chequeo.Id_Equipo.Area.NombreArea }}</td>
-                <td>{{ chequeo.Che_Fecha_Chequeo }}</td>
-                <td>{{ chequeo.Che_Observaciones }}</td>
-                <td>
-                    <a href="{% url 'chequeo_update' chequeo.id %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'chequeo_delete' chequeo.id %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="row">
+            <div class="mb-3 col-md-6">
+                <label>Usuario</label>
+                {{ form.Id_Usuario.label_tag }}
+                {{ form.Id_Usuario|add_class:"form-select" }}
+            </div>
+            <div class="mb-3 col-md-6">
+                <label>Equipo</label>
+                {{ form.Id_Equipo.label_tag }}
+                {{ form.Id_Equipo|add_class:"form-select" }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.Che_Fecha_Chequeo.label_tag }}
+            {{ form.Che_Fecha_Chequeo|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.Che_Observaciones.label_tag }}
+            {{ form.Che_Observaciones|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">{{ form.software_instalado.label }}</label><br>
+                {% for checkbox in form.software_instalado %}
+        <div class="form-check form-check-inline">
+            {{ checkbox }} {{ checkbox.choice_label }}
+        </div>
             {% empty %}
-            <tr>
-                <td colspan="7" class="text-center">No hay chequeos registrados.</td>
-            </tr>
+        <p class="text-muted">No hay software registrado.</p>
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'chequeo_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
 </div>
 {% endblock %}

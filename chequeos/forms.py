@@ -1,12 +1,13 @@
 from django import forms
 from .models import Usuario, AreaServicio, Equipo, Chequeo, Software, EspecificacionesEquipo
 
-# ------------------ Base para los styling ------------------
+# ------------------ Base con Bootstrap ------------------
 class BootstrapModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(BootstrapModelForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
+
 
 # ------------------ Formularios ------------------
 class UsuarioForm(BootstrapModelForm):
@@ -18,13 +19,15 @@ class UsuarioForm(BootstrapModelForm):
             'Usu_Cargo': 'Cargo',
         }
 
+
 class AreaServicioForm(BootstrapModelForm):
     class Meta:
         model = AreaServicio
         fields = '__all__'
         labels = {
-            'NombreArea': 'Nombre del Área',
+            'Nombre_Area': 'Nombre del Área',
         }
+
 
 class EquipoForm(BootstrapModelForm):
     class Meta:
@@ -41,9 +44,22 @@ class EquipoForm(BootstrapModelForm):
 
 
 class ChequeoForm(BootstrapModelForm):
+    software_instalado = forms.ModelMultipleChoiceField(
+        queryset=Software.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        required=False,
+        label='Software Instalado'
+    )
+
     class Meta:
         model = Chequeo
-        fields = '__all__'
+        fields = [
+            'Id_Usuario',
+            'Id_Equipo',
+            'Che_Fecha_Chequeo',
+            'Che_Observaciones',
+            'software_instalado',
+        ]
         labels = {
             'Id_Usuario': 'Usuario',
             'Id_Equipo': 'Equipo',
@@ -51,28 +67,29 @@ class ChequeoForm(BootstrapModelForm):
             'Che_Observaciones': 'Observaciones',
         }
 
+
 class SoftwareForm(BootstrapModelForm):
     class Meta:
         model = Software
         fields = '__all__'
         labels = {
-            'NombreSoftware': 'Nombre del Software',
-            'Licencia': 'Tipo de Licencia',
+            'Sof_Nombre': 'Nombre del Software',
+            'Sof_Tipo': 'Tipo de Licencia',
         }
 
-class EspecificacionesEquipoForm(BootstrapModelForm):
-    software_instalado = forms.ModelMultipleChoiceField(
-        queryset=Software.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-        label="Software Instalado"
-    )
 
+class BootstrapModelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(BootstrapModelForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+class EspecificacionesEquipoForm(BootstrapModelForm):
     class Meta:
         model = EspecificacionesEquipo
         fields = '__all__'
         labels = {
-            'Id_Equipo': 'Equipo',
+            'Equipo': 'Equipo',
             'Esp_Procesador': 'Procesador',
             'Esp_Disco_Duro': 'Disco Duro',
             'Esp_Tipo_Disco': 'Tipo de Disco',
@@ -84,17 +101,22 @@ class EspecificacionesEquipoForm(BootstrapModelForm):
             'Esp_Conectividad_Red': 'Conectividad de Red',
             'Esp_Estado_Bateria': 'Estado de la Batería',
             'Esp_Puertos_Disponibles': 'Puertos Disponibles',
+            'Esp_SO_Actualizado': 'Sistema Operativo Actualizado',
+            'Esp_Antivirus': 'Antivirus',
+            'Esp_Antivirus_Actualizado': 'Antivirus Actualizado',
+            'Esp_Estado_Equipo': 'Estado del Equipo',
+            'Esp_Observaciones': 'Observaciones',
+            'Esp_Software_Instalado': 'Software Instalado',
         }
 
-    def clean_Id_Equipo(self):
-        equipo = self.cleaned_data['Id_Equipo']
-        if EspecificacionesEquipo.objects.filter(Id_Equipo=equipo).exclude(pk=self.instance.pk).exists():
+    def clean_Equipo(self):
+        equipo = self.cleaned_data['Equipo']
+        if EspecificacionesEquipo.objects.filter(Equipo=equipo).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Ya existe una especificación registrada para este equipo.")
         return equipo
 
+    # 👉 Método para dejar el campo de software solo lectura
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            self.fields['software_instalado'].initial = Software.objects.filter(
-                equiposoftware__equipo=self.instance.Id_Equipo
-            )
+        # Hacer el campo 'Esp_Software_Instalado' solo lectura
+        self.fields['Esp_Software_Instalado'].widget.attrs['readonly'] = True

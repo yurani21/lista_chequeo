@@ -25,11 +25,11 @@ urlpatterns = [
     path('equipos/<int:pk>/delete/', views.equipo_delete, name='equipo_delete'),
 
     # ------------------ CHEQUEOS ------------------
-    path('chequeos/', views.chequeo_list, name='chequeo_list'),
-    path('chequeos/create/', views.chequeo_create, name='chequeo_create'),
-    path('chequeos/<int:pk>/update/', views.chequeo_update, name='chequeo_update'),
-    path('chequeos/<int:pk>/delete/', views.chequeo_delete, name='chequeo_delete'),
-
+     path('chequeos/', views.chequeo_list, name='chequeo_list'),
+    path('chequeo/nuevo/', views.chequeo_create, name='chequeo_create'),
+    path('chequeo/editar/<int:pk>/', views.chequeo_update, name='chequeo_update'),
+    path('chequeo/eliminar/<int:pk>/', views.chequeo_delete, name='chequeo_delete'),
+    
     # ------------------ SOFTWARE ------------------
     path('softwares/', views.software_list, name='software_list'),
     path('softwares/create/', views.software_create, name='software_create'),
@@ -41,9 +41,6 @@ urlpatterns = [
     path('especificaciones/create/', views.especificaciones_create, name='especificaciones_create'),
     path('especificaciones/<int:pk>/update/', views.especificaciones_update, name='especificaciones_update'),
     path('ajax/obtener-info-equipo/', views.obtener_info_equipo, name='obtener_info_equipo'),
-    path('especificaciones/<int:pk>/update/', views.especificaciones_update, name='especificaciones_update'),
 
- 
-    
-    
+
 ]

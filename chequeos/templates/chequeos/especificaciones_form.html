@@ -11,8 +11,8 @@
 
         <!-- EQUIPO -->
         <div class="mb-3">
-            {{ form.Id_Equipo.label_tag }}
-            {{ form.Id_Equipo }}
+            {{ form.Equipo.label_tag }}
+            {{ form.Equipo }}
         </div>
 
         <!-- INFO AUTOMÁTICA DEL EQUIPO SELECCIONADO -->
@@ -32,22 +32,23 @@
         </div>
 
         <hr>
-        <h4 class="mt-4">💻 Software</h4>
-        <div class="col-md-12 mb-3">
-    <label><strong>Software Instalado</strong></label>
-    <div class="row">
-        {% for checkbox in form.software_instalado %}
-            <div class="col-md-4 mb-2">
-                <div class="form-check">
-                    {{ checkbox.tag }} {{ checkbox.choice_label }}
-                </div>
-            </div>
-        {% endfor %}
+        <h4 class="mt-4">💽 Software</h4>
+
+        <!-- MOSTRAR SOFTWARE DEL ÚLTIMO CHEQUEO -->
+{% if software_instalado %}
+    <div class="col-md-12 mb-3">
+        <label><strong>Software detectado desde el último chequeo:</strong></label>
+        <textarea class="form-control" rows="4" readonly>{{ software_instalado }}</textarea>
     </div>
+{% endif %}
+
+<div class="col-md-12 mb-3">
+    {{ form.Esp_Software_Instalado.label_tag }}
+    {{ form.Esp_Software_Instalado }}
 </div>
 
         <hr>
-        <h4 class="mt-4">🔒 Seguridad</h4>
+        <h4 class="mt-4">🔐 Seguridad</h4>
         <div class="row">
             <div class="col-md-6 mb-3">{{ form.Esp_SO_Actualizado.label_tag }}{{ form.Esp_SO_Actualizado }}</div>
             <div class="col-md-6 mb-3">{{ form.Esp_Antivirus.label_tag }}{{ form.Esp_Antivirus }}</div>
@@ -55,7 +56,7 @@
         </div>
 
         <hr>
-        <h4 class="mt-4">📊 Estado General</h4>
+        <h4 class="mt-4">🖥️ Estado General</h4>
         <div class="row">
             <div class="col-md-6 mb-3">{{ form.Esp_Estado_Equipo.label_tag }}{{ form.Esp_Estado_Equipo }}</div>
             <div class="col-md-6 mb-3">{{ form.Esp_Estado_Bateria.label_tag }}{{ form.Esp_Estado_Bateria }}</div>
@@ -63,11 +64,11 @@
         </div>
 
         <div class="mt-4 d-flex gap-2 flex-wrap">
-    <button type="submit" name="_save" class="btn btn-success">💾 Guardar</button>
-<button type="submit" name="_addanother" class="btn btn-primary">➕ Guardar y agregar otro</button>
-<button type="submit" name="_continue" class="btn btn-warning">✏️ Guardar y continuar editando</button>
-    <a href="{{ cancel_url }}" class="btn btn-secondary">Cancelar</a>
-</div>
+            <button type="submit" name="_save" class="btn btn-success">💾 Guardar</button>
+            <button type="submit" name="_addanother" class="btn btn-primary">➕ Guardar y agregar otro</button>
+            <button type="submit" name="_continue" class="btn btn-warning">✏️ Guardar y continuar editando</button>
+            <a href="{{ cancel_url }}" class="btn btn-secondary">Cancelar</a>
+        </div>
 
     </form>
 </div>
@@ -75,7 +76,7 @@
 <!-- Script para mostrar información del equipo -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const selectEquipo = document.getElementById('id_Id_Equipo');
+    const selectEquipo = document.getElementById('id_Equipo');
     const infoDiv = document.getElementById('info-equipo');
     const infoPlaca = document.getElementById('info-placa');
     const infoArea = document.getElementById('info-area');
@@ -97,9 +98,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    selectEquipo.addEventListener('change', obtenerInfo);
-    if (selectEquipo.value) {
-        obtenerInfo();
+    if (selectEquipo) {
+        selectEquipo.addEventListener('change', obtenerInfo);
+        if (selectEquipo.value) {
+            obtenerInfo();
+        }
     }
 });
 </script>
