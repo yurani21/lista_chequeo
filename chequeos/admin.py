@@ -1,4 +1,12 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+from django.contrib.auth.models import User
+from django import forms
+from dal import autocomplete
+from django.db import models
+from django.forms import TextInput
+
 from .models import (
     Usuario,
     AreaServicio,
@@ -21,20 +29,20 @@ class SoftwareAdmin(admin.ModelAdmin):
 # ------------------------
 
 class ChequeoAdmin(admin.ModelAdmin):
-    # Asegúrate de que los campos estén bien definidos en list_display
-    list_display = ('mostrar_usuario', 'mostrar_equipo', 'Che_Fecha_Chequeo')
-    list_filter = ('Che_Fecha_Chequeo', 'Id_Usuario', 'Id_Equipo')  # Filtros para el admin
-    search_fields = ('Id_Equipo__Equ_Placa_Serie', 'Id_Usuario__Usu_Nombre')  # Búsqueda por equipo o usuario
-
+    autocomplete_fields = ['Id_Equipo']
+    list_display = ('mostrar_usuario', 'mostrar_equipo', 'Che_Fecha_Chequeo',)
+    list_filter = ('Che_Fecha_Chequeo', 'Id_Usuario', 'Id_Equipo')  
+    search_fields = ('Id_Equipo__Equ_Placa_Serie', 'Id_Usuario__Usu_Nombre')  
+    list_per_page = 10
     def mostrar_usuario(self, obj):
         # Mostrar el nombre del usuario relacionado con el chequeo
         return obj.Id_Usuario.Usu_Nombre
-    mostrar_usuario.short_description = 'Usuario'  # Etiqueta amigable en la interfaz de admin
+    mostrar_usuario.short_description = 'Usuario'  
 
     def mostrar_equipo(self, obj):
         # Mostrar la placa de serie del equipo relacionado con el chequeo
         return obj.Id_Equipo.Equ_Placa_Serie
-    mostrar_equipo.short_description = 'Equipo'  # Etiqueta amigable en la interfaz de admin
+    mostrar_equipo.short_description = 'Equipo'  
 
 
 # ------------------------
@@ -80,31 +88,84 @@ class EspecificacionesEquipoInline(admin.StackedInline):
 # ------------------------
 
 class EquipoAdmin(admin.ModelAdmin):
-    list_display = ['Equ_Placa_Serie','Area']
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'maxlength': '15'})},
+    }
+
+    list_display = ['Equ_Placa_Serie', 'Area', 'ver_especificaciones']
     search_fields = ['Equ_Placa_Serie']
     list_per_page = 10
     list_filter = (AreaDropdownFilter,)
-    inlines = [EspecificacionesEquipoInline]
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "Id_Usuario":
+            kwargs["queryset"] = User.objects.filter(groups__name="Sistemas")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def nombre_tecnico(self, obj):
+        return obj.Id_Usuario.get_full_name() if obj.Id_Usuario else "No registrado"
+    nombre_tecnico.short_description = "Técnico"
+
+    def get_inline_instances(self, request, obj=None):
+        if obj and EspecificacionesEquipo.objects.filter(equipo=obj).exists():
+            return []  # No mostrar inline si ya hay especificaciones
+        return [EspecificacionesEquipoInline(self.model, self.admin_site)]
 
     def save_model(self, request, obj, form, change):
-        # Guardamos el equipo
         super().save_model(request, obj, form, change)
-
-        # 1. Crear especificaciones si no existen
         especificacion, creada = EspecificacionesEquipo.objects.get_or_create(equipo=obj)
-
-        # 2. Buscar el último chequeo registrado para este equipo
         ultimo_chequeo = Chequeo.objects.filter(Id_Equipo=obj).order_by('-Che_Fecha_Chequeo').first()
-
         if ultimo_chequeo:
-            # 3. Copiar los softwares del último chequeo al campo de especificaciones
-            softwares_instalados = ultimo_chequeo.software_instalado.all()
-            # Convertimos la lista de softwares a un string de nombres (puedes ajustarlo si quieres otro formato)
-            software_nombres = ", ".join([software.Sof_Nombre for software in softwares_instalados])
+            software_nombres = ", ".join(s.Sof_Nombre for s in ultimo_chequeo.software_instalado.all())
             especificacion.Esp_Software_Instalado = software_nombres
             especificacion.save()
 
-    
+    def ver_especificaciones(self, obj):
+        try:
+            especificacion = obj.especificacionesequipo
+            url = reverse("admin:chequeos_especificacionesequipo_change", args=[especificacion.id])
+            return format_html('<a class="button" href="{}">Editar especificaciones</a>', url)
+        except EspecificacionesEquipo.DoesNotExist:
+            return "No registradas"
+    ver_especificaciones.short_description = "Especificaciones"
+
+class EspecificacionesEquipoForm(forms.ModelForm):
+    class Meta:
+        model = EspecificacionesEquipo
+        fields = '__all__'
+        widgets = {
+            'equipo': autocomplete.ModelSelect2(url='/sistemas/equipo-autocomplete/')
+        }
+
+class EspecificacionesEquipoAdmin(admin.ModelAdmin):
+    form = EspecificacionesEquipoForm
+    list_display = ('mostrar_equipo', 'mostrar_usuario')
+    list_per_page = 10
+    search_fields = [
+        'usuario__username', 
+        'usuario__first_name', 
+        'usuario__last_name',
+        'equipo__Equ_Placa_Serie',
+    ]
+
+    def mostrar_usuario(self, obj):
+        if obj.usuario:
+            nombre_completo = obj.usuario.get_full_name()
+            return nombre_completo if nombre_completo else obj.usuario.username
+        return "No registrado"
+    mostrar_usuario.short_description = 'Técnico'
+
+    def mostrar_equipo(self, obj):  
+        return obj.equipo.Equ_Placa_Serie
+    mostrar_equipo.short_description = 'Equipo'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "usuario":
+            kwargs["queryset"] = User.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+
 # ------------------------
 # ADMIN: ÁREA Y USUARIO
 # ------------------------
@@ -120,6 +181,10 @@ class UsuarioAdmin(admin.ModelAdmin):
 
 #_________________________Registros____________________________
 admin.site.register(Equipo, EquipoAdmin)
-admin.site.register(Chequeo)
+admin.site.register(Chequeo, ChequeoAdmin)
 admin.site.register(AreaServicio)
 admin.site.register(Software)
+admin.site.register(EspecificacionesEquipo, EspecificacionesEquipoAdmin) 
+admin.site.register(Usuario)
+
+

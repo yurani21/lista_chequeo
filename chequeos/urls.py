@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib import admin
 from . import views
+from .views import EquipoAutocomplete
 
 urlpatterns = [
 
@@ -42,5 +43,6 @@ urlpatterns = [
     path('especificaciones/<int:pk>/update/', views.especificaciones_update, name='especificaciones_update'),
     path('ajax/obtener-info-equipo/', views.obtener_info_equipo, name='obtener_info_equipo'),
 
+    path('equipo-autocomplete/', EquipoAutocomplete.as_view(), name='equipo-autocomplete'),
 
 ]

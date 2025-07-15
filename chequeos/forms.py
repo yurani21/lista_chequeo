@@ -87,6 +87,7 @@ class BootstrapModelForm(forms.ModelForm):
 class EspecificacionesEquipoForm(BootstrapModelForm):
     class Meta:
         model = EspecificacionesEquipo
+        exclude = ['usuario']
         fields = '__all__'
         labels = {
             'Equipo': 'Equipo',
@@ -107,6 +108,11 @@ class EspecificacionesEquipoForm(BootstrapModelForm):
             'Esp_Estado_Equipo': 'Estado del Equipo',
             'Esp_Observaciones': 'Observaciones',
             'Esp_Software_Instalado': 'Software Instalado',
+        }
+        widgets = {
+            'Esp_SO_Actualizado': forms.Select(attrs={'class': 'form-control'}),
+            'Esp_Antivirus': forms.Select(attrs={'class': 'form-control'}),
+            'Esp_Antivirus_Actualizado': forms.Select(attrs={'class': 'form-control'}),
         }
 
     def clean_Equipo(self):

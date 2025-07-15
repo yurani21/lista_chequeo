@@ -3,7 +3,9 @@ from .models import Usuario, AreaServicio, Equipo, Chequeo, Software, Especifica
 from .forms import UsuarioForm, AreaServicioForm, EquipoForm, ChequeoForm, SoftwareForm, EspecificacionesEquipoForm
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
-
+from dal import autocomplete
+from django.http import HttpResponse
+from django.core.paginator import Paginator
 
 def es_tecnico(user):
     return user.groups.filter(name='Técnicos').exists()
@@ -129,8 +131,15 @@ def equipo_delete(request, pk):
 @user_passes_test(es_tecnico)
 @login_required
 def chequeo_list(request):
-    chequeos = Chequeo.objects.select_related('Id_Usuario', 'Id_Equipo__Area').prefetch_related('software_instalado')
-    return render(request, 'chequeos/chequeo_list.html', {'chequeos': chequeos})
+    chequeos_queryset = Chequeo.objects.select_related('Id_Usuario', 'Id_Equipo__Area').prefetch_related('software_instalado').order_by('-Che_Fecha_Chequeo')
+    
+    paginator = Paginator(chequeos_queryset, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'chequeos/chequeo_list.html', {
+        'page_obj': page_obj,
+    })
 
 @user_passes_test(es_tecnico)
 def chequeo_create(request):
@@ -233,7 +242,7 @@ def especificaciones_list(request):
 @user_passes_test(es_administrador)
 def especificaciones_create(request):
     equipo_id = request.GET.get('equipo')
-    print("🔍 equipo_id recibido:", equipo_id)  # Verifica que llega el ID
+    print("equipo_id recibido:", equipo_id)
 
     initial_data = {}
 
@@ -241,27 +250,25 @@ def especificaciones_create(request):
         try:
             equipo = Equipo.objects.get(pk=equipo_id)
             print("Equipo encontrado:", equipo)
-
             initial_data['Equipo'] = equipo
 
             ultimo_chequeo = Chequeo.objects.filter(Id_Equipo=equipo).order_by('-Che_Fecha_Chequeo').first()
             if ultimo_chequeo:
                 print("Último chequeo:", ultimo_chequeo)
-
                 software_nombres = ", ".join(s.Sof_Nombre for s in ultimo_chequeo.software_instalado.all())
                 print("Software detectado:", software_nombres)
-
                 initial_data['Esp_Software_Instalado'] = software_nombres
             else:
                 print("No se encontró ningún chequeo.")
         except Equipo.DoesNotExist:
             print("Equipo no encontrado")
 
-    # Crear el formulario con los datos iniciales
     if request.method == 'POST':
         form = EspecificacionesEquipoForm(request.POST)
         if form.is_valid():
-            form.save()
+            especificacion = form.save(commit=False)
+            especificacion.usuario = request.user
+            especificacion.save()
             return redirect('/admin/chequeos/equipo/')
     else:
         form = EspecificacionesEquipoForm(initial=initial_data)
@@ -286,15 +293,17 @@ def especificaciones_update(request, pk):
     if request.method == 'POST':
         form = EspecificacionesEquipoForm(request.POST, instance=especificacion)
         if form.is_valid():
-            form.save()
+            especificacion = form.save(commit=False)
+            especificacion.usuario = request.user
+            especificacion.save()
             return redirect('/admin/chequeos/equipo/')
     else:
-        # Si el campo de software está vacío, lo llenamos con el del último chequeo
         initial_data = {}
         if not especificacion.Esp_Software_Instalado and software_nombres:
             initial_data['Esp_Software_Instalado'] = software_nombres
 
         form = EspecificacionesEquipoForm(instance=especificacion, initial=initial_data)
+        print("Software precargado:", initial_data.get('Esp_Software_Instalado'))
 
     return render(request, 'chequeos/especificaciones_form.html', {
         'form': form,
@@ -302,9 +311,6 @@ def especificaciones_update(request, pk):
         'title': 'Actualizar Especificaciones del Equipo',
         'cancel_url': '/admin/chequeos/equipo/',
     })
-
-    print("Software precargado:", initial_data.get('Esp_Software_Instalado'))
-
 
 @user_passes_test(es_administrador)
 def especificaciones_delete(request, pk):
@@ -331,8 +337,21 @@ def obtener_info_equipo(request):
 @login_required
 def redireccion_usuario(request):
     if request.user.groups.filter(name='Sistemas').exists():
-        return redirect('sistemas_inicio')  # Cambia esto por la URL que uses para técnicos
+        return redirect('sistemas_inicio')  
     elif request.user.is_superuser or request.user.groups.filter(name='Administrador').exists():
-        return redirect('admin_inicio')  # Cambia esto por la URL para admin
+        return redirect('admin_inicio')  
     else:
-        return redirect('logout')  # O adonde quieras redirigir si no tiene grupo
+        return redirect('logout')  
+
+#-------------------------------BÚSQUEDA PARA ESPECIFICACIONES---------------------------------#
+class EquipoAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Equipo.objects.none()
+
+        qs = Equipo.objects.all()
+
+        if self.q:
+            qs = qs.filter(Equ_Placa_Serie__icontains=self.q) 
+
+        return qs

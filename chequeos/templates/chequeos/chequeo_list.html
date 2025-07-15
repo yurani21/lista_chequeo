@@ -6,9 +6,11 @@
 <div class="container mt-4">
     <h2 class="mb-4">Chequeos Realizados</h2>
 
+    <input type="text" id="buscador" class="form-control mb-3" placeholder="Buscar por usuario, equipo o software...">
+
     <a href="{% url 'chequeo_create' %}" class="btn btn-primary mb-3">Nuevo Chequeo</a>
 
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped" id="tablaChequeos">
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
@@ -21,11 +23,11 @@
             </tr>
         </thead>
         <tbody>
-            {% for chequeo in chequeos %}
+            {% for chequeo in page_obj %}
             <tr>
                 <td>{{ chequeo.Id_Chequeo }}</td>
-                <td>{{ chequeo.Id_Usuario }}</td>
-                <td>{{ chequeo.Id_Equipo }}</td>
+                <td>{{ chequeo.Id_Usuario.Usu_Nombre }}</td>
+                <td>{{ chequeo.Id_Equipo.Equ_Placa_Serie }}</td>
                 <td>{{ chequeo.Che_Fecha_Chequeo }}</td>
                 <td>
                     {% for software in chequeo.software_instalado.all %}
@@ -47,5 +49,52 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- ✅ Paginación correctamente colocada -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </div>
+        <nav>
+            <ul class="pagination mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 </div>
+
+<!-- Buscador JS -->
+<script>
+document.getElementById("buscador").addEventListener("keyup", function() {
+    const filtro = this.value.toLowerCase();
+    const filas = document.querySelectorAll("#tablaChequeos tbody tr");
+
+    filas.forEach(fila => {
+        const texto = fila.innerText.toLowerCase();
+        fila.style.display = texto.includes(filtro) ? "" : "none";
+    });
+});
+</script>
 {% endblock %}
