@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'chequeos',
     'admin_interface',
     'colorfield', 
-    'jazzmin',
     'dal',
     'dal_select2',
     
